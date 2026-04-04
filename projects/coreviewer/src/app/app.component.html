@@ -1,0 +1,16 @@
+<section class="panel">
+  <p class="tag">Remote Microfrontend 1</p>
+  <h2>Customer dashboard</h2>
+  <p class="summary">
+    This remote is independently served on port 4201 and exposed to the shell through native federation.
+  </p>
+
+  <div class="stats">
+    @for (stat of stats; track stat.label) {
+      <article class="stat-card">
+        <span>{{ stat.label }}</span>
+        <strong>{{ stat.value }}</strong>
+      </article>
+    }
+  </div>
+</section>

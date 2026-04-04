@@ -1,0 +1,4 @@
+{
+	"coreviewer": "http://localhost:4201/remoteEntry.json",
+	"dataviewer": "http://localhost:4202/remoteEntry.json"
+}

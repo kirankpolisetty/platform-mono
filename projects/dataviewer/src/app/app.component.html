@@ -1,0 +1,53 @@
+<section class="workspace">
+  <header class="hero">
+    <div>
+      <p class="tag">Remote Microfrontend</p>
+      <h2>Data Viewer</h2>
+      <p class="summary">
+        Large operational grid prepared for Oracle-backed asset data. The current rows are mock records
+        shaped so the view can later swap to a real `/api/assets` response.
+      </p>
+    </div>
+
+    <label class="search">
+      <span>Quick filter</span>
+      <input
+        type="search"
+        [(ngModel)]="quickFilterText"
+        placeholder="Filter by asset, owner, region, or status"
+      />
+    </label>
+  </header>
+
+  <section class="metrics">
+    <article>
+      <span>Total assets</span>
+      <strong>{{ totalAssets }}</strong>
+    </article>
+    <article>
+      <span>Warnings</span>
+      <strong>{{ warningCount }}</strong>
+    </article>
+    <article>
+      <span>Critical</span>
+      <strong>{{ criticalCount }}</strong>
+    </article>
+    <article>
+      <span>Avg refresh</span>
+      <strong>{{ averageRefreshMinutes }} min</strong>
+    </article>
+  </section>
+
+  <section class="grid-shell">
+    <ag-grid-angular
+      class="grid"
+      [columnDefs]="columnDefs"
+      [defaultColDef]="defaultColDef"
+      [quickFilterText]="quickFilterText"
+      [rowData]="rowData"
+      [theme]="theme"
+      domLayout="normal"
+      rowSelection="multiple"
+    />
+  </section>
+</section>

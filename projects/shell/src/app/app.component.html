@@ -1,0 +1,26 @@
+<main class="shell-layout">
+  <section class="shell-hero">
+    <p class="eyebrow">Angular 19 Native Federation</p>
+    <h1>Shell host with two microfrontends</h1>
+    <p class="intro">
+      The host runs on port 4200 and lazy-loads two independently served remotes.
+      Switch tabs below to verify the remote boundary.
+    </p>
+  </section>
+
+  <nav class="app-switcher" aria-label="Microfrontend navigation">
+    @for (app of apps; track app.route) {
+      <a
+        [routerLink]="app.route"
+        routerLinkActive="active"
+        class="app-link"
+      >
+        {{ app.label }}
+      </a>
+    }
+  </nav>
+
+  <section class="remote-slot">
+    <router-outlet />
+  </section>
+</main>
