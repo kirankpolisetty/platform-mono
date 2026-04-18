@@ -11,7 +11,7 @@
 			"projectType": "application",
 			"schematics": {
 				"@schematics/angular:component": {
-					"style": "scss"
+					"style": "css"
 				}
 			},
 			"root": "projects/shell",
@@ -52,7 +52,7 @@
 							"zone.js/testing"
 						],
 						"tsConfig": "projects/shell/tsconfig.spec.json",
-						"inlineStyleLanguage": "scss",
+						"inlineStyleLanguage": "css",
 						"assets": [
 							{
 								"glob": "**/*",
@@ -60,7 +60,7 @@
 							}
 						],
 						"styles": [
-							"projects/shell/src/styles.scss"
+							"projects/shell/src/styles.css"
 						],
 						"scripts": []
 					}
@@ -76,7 +76,7 @@
 							"es-module-shims"
 						],
 						"tsConfig": "projects/shell/tsconfig.app.json",
-						"inlineStyleLanguage": "scss",
+						"inlineStyleLanguage": "css",
 						"assets": [
 							{
 								"glob": "**/*",
@@ -84,7 +84,7 @@
 							}
 						],
 						"styles": [
-							"projects/shell/src/styles.scss"
+							"projects/shell/src/styles.css"
 						],
 						"scripts": []
 					},
@@ -133,7 +133,7 @@
 			"projectType": "application",
 			"schematics": {
 				"@schematics/angular:component": {
-					"style": "scss"
+					"style": "css"
 				}
 			},
 			"root": "projects/coreviewer",
@@ -174,7 +174,7 @@
 							"zone.js/testing"
 						],
 						"tsConfig": "projects/coreviewer/tsconfig.spec.json",
-						"inlineStyleLanguage": "scss",
+						"inlineStyleLanguage": "css",
 						"assets": [
 							{
 								"glob": "**/*",
@@ -182,7 +182,7 @@
 							}
 						],
 						"styles": [
-							"projects/coreviewer/src/styles.scss"
+							"projects/coreviewer/src/styles.css"
 						],
 						"scripts": []
 					}
@@ -198,7 +198,7 @@
 							"es-module-shims"
 						],
 						"tsConfig": "projects/coreviewer/tsconfig.app.json",
-						"inlineStyleLanguage": "scss",
+						"inlineStyleLanguage": "css",
 						"assets": [
 							{
 								"glob": "**/*",
@@ -206,7 +206,7 @@
 							}
 						],
 						"styles": [
-							"projects/coreviewer/src/styles.scss"
+							"projects/coreviewer/src/styles.css"
 						],
 						"scripts": []
 					},
@@ -255,7 +255,7 @@
 			"projectType": "application",
 			"schematics": {
 				"@schematics/angular:component": {
-					"style": "scss"
+					"style": "css"
 				}
 			},
 			"root": "projects/dataviewer",
@@ -296,7 +296,7 @@
 							"zone.js/testing"
 						],
 						"tsConfig": "projects/dataviewer/tsconfig.spec.json",
-						"inlineStyleLanguage": "scss",
+						"inlineStyleLanguage": "css",
 						"assets": [
 							{
 								"glob": "**/*",
@@ -304,7 +304,7 @@
 							}
 						],
 						"styles": [
-							"projects/dataviewer/src/styles.scss"
+							"projects/dataviewer/src/styles.css"
 						],
 						"scripts": []
 					}
@@ -320,7 +320,7 @@
 							"es-module-shims"
 						],
 						"tsConfig": "projects/dataviewer/tsconfig.app.json",
-						"inlineStyleLanguage": "scss",
+						"inlineStyleLanguage": "css",
 						"assets": [
 							{
 								"glob": "**/*",
@@ -328,7 +328,7 @@
 							}
 						],
 						"styles": [
-							"projects/dataviewer/src/styles.scss"
+							"projects/dataviewer/src/styles.css"
 						],
 						"scripts": []
 					},

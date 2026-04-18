@@ -1,6 +1,12 @@
 import { initFederation } from '@angular-architects/native-federation';
 
-initFederation('federation.manifest.json')
-  .catch(err => console.error(err))
-  .then(_ => import('./bootstrap'))
-  .catch(err => console.error(err));
+void startShell();
+
+async function startShell(): Promise<void> {
+  try {
+    await initFederation('federation.manifest.json');
+    await import('./bootstrap');
+  } catch (error) {
+    console.error(error);
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "name": "angular19-mfe",
+  "name": "coral-shell",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -24,6 +24,7 @@
     "@angular/platform-browser": "^19.2.0",
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
+    "@auth0/angular-jwt": "^5.2.0",
     "@softarc/native-federation-node": "^2.0.10",
     "ag-grid-angular": "^35.2.0",
     "ag-grid-community": "^35.2.0",

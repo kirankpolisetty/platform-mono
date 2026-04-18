@@ -58,6 +58,39 @@ h2 {
   font: inherit;
 }
 
+.viewer-actions {
+  width: min(1100px, 100%);
+  margin: 0 auto 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.open-viewer-button {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.9rem 1.25rem;
+  background: #4a2a10;
+  color: #fffaf2;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 18px 34px rgba(82, 50, 18, 0.18);
+  transition: transform 150ms ease, background-color 150ms ease;
+}
+
+.open-viewer-button:hover {
+  transform: translateY(-1px);
+  background: #9f5718;
+}
+
+.selection-status {
+  margin: 0;
+  color: #51321a;
+  font-weight: 700;
+}
+
 .metrics {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -124,6 +157,7 @@ h2 {
 
   .hero {
     align-items: stretch;
+    
     flex-direction: column;
   }
 

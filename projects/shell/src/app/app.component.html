@@ -1,26 +1,106 @@
 <main class="shell-layout">
-  <section class="shell-hero">
-    <p class="eyebrow">Angular 19 Native Federation</p>
-    <h1>Shell host with two microfrontends</h1>
-    <p class="intro">
-      The host runs on port 4200 and lazy-loads two independently served remotes.
-      Switch tabs below to verify the remote boundary.
-    </p>
+  @if (!authenticated()) {
+    <div class="blocked-overlay" aria-live="assertive">
+      <section class="blocked-card">
+        <p class="blocked-eyebrow">Coral Shell</p>
+        <h2>unauthorized / invalid login</h2>
+        <p>
+          {{ authenticatedException() || 'Unable to validate your login from the external token service.' }}
+        </p>
+      </section>
+    </div>
+  }
+
+  <section class="platform-header">
+    <div class="platform-title-row">
+      <div>
+        <h1>GLOD-PLATFORM</h1>
+        <h2>Applications</h2>
+      </div>
+
+      <aside class="user-badge" aria-label="Logged in user">
+        <span>User</span>
+        <strong>{{ currentUser() || 'Not signed in' }}</strong>
+      </aside>
+    </div>
   </section>
 
-  <nav class="app-switcher" aria-label="Microfrontend navigation">
-    @for (app of apps; track app.route) {
-      <a
-        [routerLink]="app.route"
-        routerLinkActive="active"
-        class="app-link"
-      >
-        {{ app.label }}
-      </a>
-    }
-  </nav>
+  <section
+    class="widget-grid"
+    aria-label="Microfrontend widgets"
+    [class.disabled]="!authenticated()"
+    [class.has-maximized-widget]="maximizedWidget()"
+  >
+    <article
+      class="widget-card"
+      [class.maximized]="maximizedWidget() === 'coreviewer'"
+      [class.minimized]="maximizedWidget() && maximizedWidget() !== 'coreviewer'"
+    >
+      <header class="widget-header">
+        <div>
+          <p>Widget</p>
+          <h2>Core Viewer</h2>
+        </div>
 
-  <section class="remote-slot">
-    <router-outlet />
+        <button
+          type="button"
+          class="maximize-button"
+          [attr.aria-pressed]="maximizedWidget() === 'coreviewer'"
+          (click)="toggleMaximize('coreviewer')"
+        >
+          {{ maximizedWidget() === 'coreviewer' ? 'Restore' : 'Maximize' }}
+        </button>
+      </header>
+
+      <div class="widget-body">
+        @if (authenticated()) {
+          @if (coreViewerComponent()) {
+            <ng-container *ngComponentOutlet="coreViewerComponent(); inputs: coreViewerInputs()" />
+          } @else if (coreViewerError()) {
+            <p class="widget-error">{{ coreViewerError() }}</p>
+          } @else {
+            <p class="widget-loading">Loading Core Viewer...</p>
+          }
+        } @else {
+          <div class="remote-placeholder"></div>
+        }
+      </div>
+    </article>
+
+    <article
+      class="widget-card"
+      [class.maximized]="maximizedWidget() === 'dataviewer'"
+      [class.minimized]="maximizedWidget() && maximizedWidget() !== 'dataviewer'"
+    >
+      <header class="widget-header">
+        <div>
+          <p>Widget</p>
+          <h2>Data Viewer</h2>
+        </div>
+
+        <button
+          type="button"
+          class="maximize-button"
+          [attr.aria-pressed]="maximizedWidget() === 'dataviewer'"
+          (click)="toggleMaximize('dataviewer')"
+        >
+          {{ maximizedWidget() === 'dataviewer' ? 'Restore' : 'Maximize' }}
+        </button>
+      </header>
+
+      <div class="widget-body">
+        @if (authenticated()) {
+          @if (dataViewerComponent()) {
+            <ng-container *ngComponentOutlet="dataViewerComponent()" />
+          } @else if (dataViewerError()) {
+            <p class="widget-error">{{ dataViewerError() }}</p>
+          } @else {
+            <p class="widget-loading">Loading Data Viewer...</p>
+          }
+        } @else {
+          <div class="remote-placeholder"></div>
+        }
+      </div>
+    </article>
   </section>
 </main>

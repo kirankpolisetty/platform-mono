@@ -1,39 +1,50 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AgGridAngular } from 'ag-grid-angular';
 import {
   AllCommunityModule,
   ColDef,
-  ModuleRegistry,
-  NumberFilterModule,
+  RowSelectionOptions,
+  SelectionChangedEvent,
   TextFilterModule,
   themeQuartz,
-  ValueFormatterParams
+  type Module
 } from 'ag-grid-community';
 
-ModuleRegistry.registerModules([AllCommunityModule, TextFilterModule, NumberFilterModule]);
-
-type AssetRecord = {
-  id: string;
-  assetName: string;
-  region: string;
-  owner: string;
-  status: 'Healthy' | 'Warning' | 'Critical';
-  environment: 'Prod' | 'Stage' | 'Dev';
-  throughput: number;
-  incidentCount: number;
-  refreshMinutes: number;
-  lastSynced: string;
+type CoreDescriptionRecord = {
+  wellName: string;
+  coreNumber: number;
+  topDepth: number;
+  rockType: string;
+  sheet: number;
+  descNumber: number;
+  bottomDepth: number;
+  reservoir: string;
+  coreDesc: string;
 };
+
+type CoreDescriptionMetadata = {
+  descNumber: number;
+  coreNumber: number;
+  topDepth: number;
+  bottomDepth: number;
+  reservoir: string;
+  coreDesc: string;
+};
+
+const CORE_DESCRIPTION_VIEWER_URL =
+  'https://coredescriptionviewer-easd-coral-dev.apps.ocp.enp.aramco.com.sa/#/coredescription/5678';
 
 @Component({
   selector: 'app-root',
   imports: [CommonModule, FormsModule, AgGridAngular],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.css'
 })
 export class AppComponent {
+  readonly modules: Module[] = [AllCommunityModule, TextFilterModule];
+
   readonly theme = themeQuartz.withParams({
     accentColor: '#9f5718',
     backgroundColor: '#fff9f0',
@@ -48,7 +59,7 @@ export class AppComponent {
     spacing: 10
   });
 
-  readonly defaultColDef: ColDef<AssetRecord> = {
+  readonly defaultColDef: ColDef<CoreDescriptionRecord> = {
     filter: true,
     floatingFilter: true,
     minWidth: 140,
@@ -56,81 +67,91 @@ export class AppComponent {
     sortable: true
   };
 
-  readonly columnDefs: ColDef<AssetRecord>[] = [
-    { field: 'id', headerName: 'Asset ID', pinned: 'left', minWidth: 130 },
-    { field: 'assetName', headerName: 'Asset Name', minWidth: 220 },
-    { field: 'region', headerName: 'Region', minWidth: 150 },
-    { field: 'owner', headerName: 'Owner', minWidth: 170 },
+  readonly rowSelection: RowSelectionOptions<CoreDescriptionRecord> = {
+    mode: 'singleRow',
+    checkboxes: true,
+    enableClickSelection: true
+  };
+
+  readonly columnDefs: ColDef<CoreDescriptionRecord>[] = [
     {
-      field: 'status',
-      headerName: 'Status',
-      minWidth: 140,
-      cellClass: (params) => `status-cell status-${String(params.value).toLowerCase()}`
+      field: 'wellName',
+      headerName: 'Well Name',
+      pinned: 'left',
+      minWidth: 180
     },
-    { field: 'environment', headerName: 'Env', minWidth: 120 },
-    {
-      field: 'throughput',
-      headerName: 'Throughput / hr',
-      filter: 'agNumberColumnFilter',
-      minWidth: 170,
-      valueFormatter: numberFormatter
-    },
-    {
-      field: 'incidentCount',
-      headerName: 'Incidents',
-      filter: 'agNumberColumnFilter',
-      minWidth: 130
-    },
-    {
-      field: 'refreshMinutes',
-      headerName: 'Refresh (min)',
-      filter: 'agNumberColumnFilter',
-      minWidth: 150
-    },
-    { field: 'lastSynced', headerName: 'Last Synced', minWidth: 190 }
+    { field: 'coreNumber', headerName: 'Core Number', minWidth: 150 },
+    { field: 'topDepth', headerName: 'Top Depth', minWidth: 150 },
+    { field: 'rockType', headerName: 'Rock Type', minWidth: 150 },
+    { field: 'sheet', headerName: 'Sheet', minWidth: 140 },
+    { field: 'descNumber', headerName: 'Desc NO.', minWidth: 150 }
   ];
 
-  readonly rowData: AssetRecord[] = createAssetRows(2500);
+  readonly rowData: CoreDescriptionRecord[] = [
+    {
+      wellName: 'WAQR_21.0',
+      coreNumber: 1,
+      topDepth: 14310,
+      rockType: 'CLAST',
+      sheet: 8345,
+      descNumber: 59664,
+      bottomDepth: 14346,
+      reservoir: 'UNZA',
+      coreDesc: 'Anzi'
+    },
+    {
+      wellName: 'WAQR_21.0',
+      coreNumber: 1,
+      topDepth: 14310,
+      rockType: 'CLAST',
+      sheet: 10172,
+      descNumber: 63774,
+      bottomDepth: 14376,
+      reservoir: 'UNZA',
+      coreDesc: 'Garner'
+    },
+    {
+      wellName: 'WAQR_21.0',
+      coreNumber: 1,
+      topDepth: 14310,
+      rockType: 'CLAST',
+      sheet: 8345,
+      descNumber: 59667,
+      bottomDepth: 14376,
+      reservoir: 'UNZA',
+      coreDesc: 'Garner'
+    }
+  ];
 
   readonly totalAssets = this.rowData.length;
-  readonly warningCount = this.rowData.filter((row) => row.status === 'Warning').length;
-  readonly criticalCount = this.rowData.filter((row) => row.status === 'Critical').length;
-  readonly averageRefreshMinutes = Math.round(
-    this.rowData.reduce((sum, row) => sum + row.refreshMinutes, 0) / this.rowData.length
-  );
+  readonly warningCount = this.rowData.filter((row) => row.coreNumber === 1).length;
+  readonly criticalCount = this.rowData.filter((row) => row.coreNumber === 2).length;
+  readonly averageRefreshMinutes = Math.round(this.rowData.length / 12);
 
   quickFilterText = '';
-}
+  readonly selectedRecord = signal<CoreDescriptionRecord | null>(null);
 
-const numberFormatter = (params: ValueFormatterParams<AssetRecord, number>) =>
-  params.value?.toLocaleString('en-US') ?? '';
+  openViewer(): void {
+    window.open(CORE_DESCRIPTION_VIEWER_URL, '_blank', 'noopener,noreferrer');
+  }
 
-function createAssetRows(count: number): AssetRecord[] {
-  const regions = ['North America', 'Europe', 'APAC', 'Middle East', 'LATAM'];
-  const owners = ['Retail Ops', 'Supply Chain', 'Risk Desk', 'Loyalty', 'Platform', 'Finance'];
-  const environments: AssetRecord['environment'][] = ['Prod', 'Stage', 'Dev'];
-  const statuses: AssetRecord['status'][] = ['Healthy', 'Warning', 'Critical'];
+  onSelectionChanged(event: SelectionChangedEvent<CoreDescriptionRecord>): void {
+    const selectedRecord = event.api.getSelectedRows()[0] ?? null;
+    this.selectedRecord.set(selectedRecord);
 
-  return Array.from({ length: count }, (_, index) => {
-    const assetNumber = index + 1;
-    const status = statuses[index % statuses.length];
-    const refreshMinutes = 3 + (index % 11) * 2;
-    const throughput = 10000 + ((index * 137) % 85000);
-    const incidents = status === 'Critical' ? 4 + (index % 5) : status === 'Warning' ? 1 + (index % 4) : index % 2;
-
-    return {
-      id: `AST-${String(assetNumber).padStart(5, '0')}`,
-      assetName: `Oracle feed ${assetNumber}`,
-      region: regions[index % regions.length],
-      owner: owners[index % owners.length],
-      status,
-      environment: environments[index % environments.length],
-      throughput,
-      incidentCount: incidents,
-      refreshMinutes,
-      lastSynced: `2026-04-${String((index % 28) + 1).padStart(2, '0')} ${String(
-        8 + (index % 11)
-      ).padStart(2, '0')}:${String((index * 7) % 60).padStart(2, '0')}`
-    };
-  });
+    if (selectedRecord) {
+      window.dispatchEvent(
+        new CustomEvent<CoreDescriptionMetadata>('coral:description-selected', {
+          detail: {
+            descNumber: selectedRecord.descNumber,
+            coreNumber: selectedRecord.coreNumber,
+            topDepth: selectedRecord.topDepth,
+            bottomDepth: selectedRecord.bottomDepth,
+            reservoir: selectedRecord.reservoir,
+            coreDesc: selectedRecord.coreDesc
+          }
+        })
+      );
+    }
+  }
 }

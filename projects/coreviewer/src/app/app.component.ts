@@ -1,14 +1,31 @@
-import { Component } from '@angular/core';
+import { Component, input, signal } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
+
+type CoreDescriptionMetadata = {
+  descNumber: number;
+  coreNumber: number;
+  topDepth: number;
+  bottomDepth: number;
+  reservoir: string;
+  coreDesc: string;
+};
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.css'
 })
 export class AppComponent {
-  readonly stats = [
-    { label: 'Active users', value: '12.4K' },
-    { label: 'Conversion rate', value: '6.8%' },
-    { label: 'Avg. response', value: '182ms' }
-  ];
+  readonly selectedDescription = input<CoreDescriptionMetadata | null>(null);
+  readonly viewerLoading = signal(true);
+  readonly reactAppUrl = 'http://localhost:3000';
+  readonly reactAppSource;
+
+  constructor(private readonly sanitizer: DomSanitizer) {
+    this.reactAppSource = this.sanitizer.bypassSecurityTrustResourceUrl(this.reactAppUrl);
+  }
+
+  onViewerLoaded(): void {
+    this.viewerLoading.set(false);
+  }
 }

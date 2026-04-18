@@ -18,7 +18,12 @@ export const routes: Routes = [
     title: 'DataViewer'
   },
   {
+    path: 'data-viewer',
+    redirectTo: 'dataviewer',
+    pathMatch: 'full'
+  },
+  {
     path: '**',
-    redirectTo: 'coreViewer'
+    redirectTo: 'coreviewer'
   }
 ];

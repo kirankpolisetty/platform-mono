@@ -4,8 +4,8 @@
       <p class="tag">Remote Microfrontend</p>
       <h2>Data Viewer</h2>
       <p class="summary">
-        Large operational grid prepared for Oracle-backed asset data. The current rows are mock records
-        shaped so the view can later swap to a real `/api/assets` response.
+        Core description records with selectable rows and a direct launch action for the external
+        Core Description Viewer.
       </p>
     </div>
 
@@ -14,28 +14,23 @@
       <input
         type="search"
         [(ngModel)]="quickFilterText"
-        placeholder="Filter by asset, owner, region, or status"
+        placeholder="Filter by well name, rock type, sheet, or desc no."
       />
     </label>
   </header>
 
-  <section class="metrics">
-    <article>
-      <span>Total assets</span>
-      <strong>{{ totalAssets }}</strong>
-    </article>
-    <article>
-      <span>Warnings</span>
-      <strong>{{ warningCount }}</strong>
-    </article>
-    <article>
-      <span>Critical</span>
-      <strong>{{ criticalCount }}</strong>
-    </article>
-    <article>
-      <span>Avg refresh</span>
-      <strong>{{ averageRefreshMinutes }} min</strong>
-    </article>
+  <section class="viewer-actions" aria-label="Viewer actions">
+    <button type="button" class="open-viewer-button" (click)="openViewer()">
+      Open Viewer
+    </button>
+
+    @if (selectedRecord()) {
+      <p class="selection-status">
+        Selected Desc NO. {{ selectedRecord()?.descNumber }}. Metadata is now visible in Core Viewer.
+      </p>
+    } @else {
+      <p class="selection-status">Select a row to update Core Viewer metadata.</p>
+    }
   </section>
 
   <section class="grid-shell">
@@ -43,11 +38,13 @@
       class="grid"
       [columnDefs]="columnDefs"
       [defaultColDef]="defaultColDef"
+      [modules]="modules"
       [quickFilterText]="quickFilterText"
       [rowData]="rowData"
+      [rowSelection]="rowSelection"
       [theme]="theme"
+      (selectionChanged)="onSelectionChanged($event)"
       domLayout="normal"
-      rowSelection="multiple"
     />
   </section>
 </section>
