@@ -91,11 +91,47 @@
       <div class="widget-body">
         @if (authenticated()) {
           @if (dataViewerComponent()) {
-            <ng-container *ngComponentOutlet="dataViewerComponent()" />
+            <ng-container *ngComponentOutlet="dataViewerComponent(); inputs: dataViewerInputs()" />
           } @else if (dataViewerError()) {
             <p class="widget-error">{{ dataViewerError() }}</p>
           } @else {
             <p class="widget-loading">Loading Data Viewer...</p>
+          }
+        } @else {
+          <div class="remote-placeholder"></div>
+        }
+      </div>
+    </article>
+
+    <article
+      class="widget-card"
+      [class.maximized]="maximizedWidget() === 'gis'"
+      [class.minimized]="maximizedWidget() && maximizedWidget() !== 'gis'"
+    >
+      <header class="widget-header">
+        <div>
+          <p>Widget</p>
+          <h2>ArcGIS Viewer</h2>
+        </div>
+
+        <button
+          type="button"
+          class="maximize-button"
+          [attr.aria-pressed]="maximizedWidget() === 'gis'"
+          (click)="toggleMaximize('gis')"
+        >
+          {{ maximizedWidget() === 'gis' ? 'Restore' : 'Maximize' }}
+        </button>
+      </header>
+
+      <div class="widget-body gis-widget-body">
+        @if (authenticated()) {
+          @if (gisViewerComponent()) {
+            <ng-container *ngComponentOutlet="gisViewerComponent(); inputs: gisViewerInputs()" />
+          } @else if (gisViewerError()) {
+            <p class="widget-error">{{ gisViewerError() }}</p>
+          } @else {
+            <p class="widget-loading">Loading ArcGIS Viewer...</p>
           }
         } @else {
           <div class="remote-placeholder"></div>

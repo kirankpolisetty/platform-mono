@@ -1,0 +1,80 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: coral-shell
+  namespace: kyranpoli-dev
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: coreviewer
+  namespace: kyranpoli-dev
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: dataviewer
+  namespace: kyranpoli-dev
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: coral-shell
+  namespace: kyranpoli-dev
+spec:
+  source:
+    type: Binary
+    binary: {}
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+      buildArgs:
+        - name: APP_NAME
+          value: shell
+  output:
+    to:
+      kind: ImageStreamTag
+      name: coral-shell:latest
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: coreviewer
+  namespace: kyranpoli-dev
+spec:
+  source:
+    type: Binary
+    binary: {}
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+      buildArgs:
+        - name: APP_NAME
+          value: coreviewer
+  output:
+    to:
+      kind: ImageStreamTag
+      name: coreviewer:latest
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: dataviewer
+  namespace: kyranpoli-dev
+spec:
+  source:
+    type: Binary
+    binary: {}
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+      buildArgs:
+        - name: APP_NAME
+          value: dataviewer
+  output:
+    to:
+      kind: ImageStreamTag
+      name: dataviewer:latest

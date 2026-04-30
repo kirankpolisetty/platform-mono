@@ -10,6 +10,8 @@ type CoreDescriptionMetadata = {
   coreDesc: string;
 };
 
+type CoreViewerTab = 'summary' | 'viewer';
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -17,6 +19,7 @@ type CoreDescriptionMetadata = {
 })
 export class AppComponent {
   readonly selectedDescription = input<CoreDescriptionMetadata | null>(null);
+  readonly activeCoreTab = input<CoreViewerTab>('summary');
   readonly viewerLoading = signal(true);
   readonly reactAppUrl = 'http://localhost:3000';
   readonly reactAppSource;
@@ -27,5 +30,21 @@ export class AppComponent {
 
   onViewerLoaded(): void {
     this.viewerLoading.set(false);
+  }
+
+  navigateToTab(coreTab: CoreViewerTab): void {
+    const descNumber = this.selectedDescription()?.descNumber;
+
+    if (!descNumber || this.activeCoreTab() === coreTab) {
+      return;
+    }
+
+    window.dispatchEvent(
+      new CustomEvent('coral:navigate', {
+        detail: {
+          route: ['/coredescription', descNumber, coreTab]
+        }
+      })
+    );
   }
 }

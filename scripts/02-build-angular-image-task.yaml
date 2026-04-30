@@ -1,0 +1,86 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: build-angular-image
+  namespace: kyranpoli-dev
+spec:
+  description: Ensures OpenShift image resources exist for one Angular app, then starts its binary build.
+  params:
+    - name: app-name
+      type: string
+      description: Angular app name to build.
+    - name: image-tag
+      type: string
+      default: latest
+      description: Image tag to push and deploy.
+    - name: namespace
+      type: string
+      default: kyranpoli-dev
+      description: Target OpenShift namespace.
+  workspaces:
+    - name: source
+  results:
+    - name: image-name
+      description: ImageStream and BuildConfig name for this app.
+  steps:
+    - name: build
+      image: registry.redhat.io/openshift4/ose-cli:latest
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+
+        normalize_name() {
+          if [ "$1" = "shell" ]; then
+            printf '%s' 'coral-shell'
+          else
+            printf '%s' "$1"
+          fi
+        }
+
+        ensure_resources() {
+          local app_name="$1"
+          local resource_name="$2"
+
+          oc apply -n "$(params.namespace)" -f - <<EOF
+        apiVersion: image.openshift.io/v1
+        kind: ImageStream
+        metadata:
+          name: ${resource_name}
+        ---
+        apiVersion: build.openshift.io/v1
+        kind: BuildConfig
+        metadata:
+          name: ${resource_name}
+        spec:
+          source:
+            type: Binary
+            binary: {}
+          strategy:
+            type: Docker
+            dockerStrategy:
+              dockerfilePath: Dockerfile
+              buildArgs:
+                - name: APP_NAME
+                  value: ${app_name}
+          output:
+            to:
+              kind: ImageStreamTag
+              name: ${resource_name}:$(params.image-tag)
+        EOF
+        }
+
+        APP_NAME="$(params.app-name)"
+        RESOURCE_NAME="$(normalize_name "$APP_NAME")"
+
+        echo "Ensuring OpenShift resources for ${APP_NAME} -> ${RESOURCE_NAME}"
+        ensure_resources "$APP_NAME" "$RESOURCE_NAME"
+
+        echo "Starting build for ${APP_NAME}"
+        oc start-build "${RESOURCE_NAME}" \
+          --from-dir="$(workspaces.source.path)" \
+          --follow \
+          --wait \
+          -n "$(params.namespace)"
+
+        echo -n "$RESOURCE_NAME" > "$(results.image-name.path)"

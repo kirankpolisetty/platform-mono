@@ -10,6 +10,15 @@ To start a local development server, run:
 ng serve
 ```
 
+Run the shell and remotes individually:
+
+```bash
+npm run start:shell
+npm run start:coreviewer
+npm run start:dataviewer
+npm run start:arcgisviewer
+```
+
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
 ## Code scaffolding

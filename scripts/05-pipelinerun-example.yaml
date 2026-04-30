@@ -1,0 +1,30 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: coral-monorepo-pipeline-run
+  namespace: kyranpoli-dev
+spec:
+  pipelineRef:
+    name: coral-monorepo-pipeline
+  params:
+    - name: git-url
+      value: https://github.com/kirankpolisetty/platform-mono.git
+    - name: git-revision
+      value: main
+    - name: base-revision
+      value: HEAD~1
+    - name: namespace
+      value: kyranpoli-dev
+    - name: image-tag
+      value: latest
+    - name: force-all
+      value: "false"
+  workspaces:
+    - name: shared-workspace
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 2Gi

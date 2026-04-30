@@ -1,0 +1,64 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: deploy-openshift-app
+  namespace: kyranpoli-dev
+spec:
+  description: Creates or updates the OpenShift deployment for one Angular app and waits for rollout.
+  params:
+    - name: namespace
+      type: string
+      default: kyranpoli-dev
+    - name: app-name
+      type: string
+      description: Angular app name to deploy.
+    - name: image-tag
+      type: string
+      default: latest
+  steps:
+    - name: deploy
+      image: registry.redhat.io/openshift4/ose-cli:latest
+      script: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+
+        normalize_name() {
+          if [ "$1" = "shell" ]; then
+            printf '%s' 'coral-shell'
+          else
+            printf '%s' "$1"
+          fi
+        }
+
+        APP_NAME="$(params.app-name)"
+        RESOURCE_NAME="$(normalize_name "$APP_NAME")"
+        IMAGE="image-registry.openshift-image-registry.svc:5000/$(params.namespace)/${RESOURCE_NAME}:$(params.image-tag)"
+
+        oc apply -n "$(params.namespace)" -f - <<EOF
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: ${RESOURCE_NAME}
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app: ${RESOURCE_NAME}
+          template:
+            metadata:
+              labels:
+                app: ${RESOURCE_NAME}
+            spec:
+              containers:
+                - name: ${RESOURCE_NAME}
+                  image: ${IMAGE}
+                  imagePullPolicy: Always
+                  ports:
+                    - containerPort: 8080
+        EOF
+
+        oc set image "deployment/${RESOURCE_NAME}" \
+          "${RESOURCE_NAME}=${IMAGE}" \
+          -n "$(params.namespace)"
+
+        oc rollout status "deployment/${RESOURCE_NAME}" -n "$(params.namespace)"

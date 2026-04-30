@@ -1,10 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, signal } from '@angular/core';
+import { Component, effect, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AgGridAngular } from 'ag-grid-angular';
 import {
   AllCommunityModule,
   ColDef,
+  GridApi,
+  GridReadyEvent,
   RowSelectionOptions,
   SelectionChangedEvent,
   TextFilterModule,
@@ -33,8 +35,7 @@ type CoreDescriptionMetadata = {
   coreDesc: string;
 };
 
-const CORE_DESCRIPTION_VIEWER_URL =
-  'https://coredescriptionviewer-easd-coral-dev.apps.ocp.enp.aramco.com.sa/#/coredescription/5678';
+const CORE_DESCRIPTION_VIEWER_PATH = '/coredescriptionviewer/#/coredescription/5678';
 
 @Component({
   selector: 'app-root',
@@ -43,6 +44,7 @@ const CORE_DESCRIPTION_VIEWER_URL =
   styleUrl: './app.component.css'
 })
 export class AppComponent {
+  readonly selectedDescNumber = input<number | null>(null);
   readonly modules: Module[] = [AllCommunityModule, TextFilterModule];
 
   readonly theme = themeQuartz.withParams({
@@ -130,28 +132,65 @@ export class AppComponent {
 
   quickFilterText = '';
   readonly selectedRecord = signal<CoreDescriptionRecord | null>(null);
+  private gridApi: GridApi<CoreDescriptionRecord> | null = null;
+
+  constructor() {
+    effect(() => {
+      this.selectedDescNumber();
+      this.selectRowFromInput();
+    });
+  }
 
   openViewer(): void {
-    window.open(CORE_DESCRIPTION_VIEWER_URL, '_blank', 'noopener,noreferrer');
+    window.open(`${window.location.origin}${CORE_DESCRIPTION_VIEWER_PATH}`, '_blank', 'noopener,noreferrer');
+  }
+
+  onGridReady(event: GridReadyEvent<CoreDescriptionRecord>): void {
+    this.gridApi = event.api;
+    this.selectRowFromInput();
   }
 
   onSelectionChanged(event: SelectionChangedEvent<CoreDescriptionRecord>): void {
     const selectedRecord = event.api.getSelectedRows()[0] ?? null;
     this.selectedRecord.set(selectedRecord);
 
-    if (selectedRecord) {
-      window.dispatchEvent(
-        new CustomEvent<CoreDescriptionMetadata>('coral:description-selected', {
-          detail: {
-            descNumber: selectedRecord.descNumber,
-            coreNumber: selectedRecord.coreNumber,
-            topDepth: selectedRecord.topDepth,
-            bottomDepth: selectedRecord.bottomDepth,
-            reservoir: selectedRecord.reservoir,
-            coreDesc: selectedRecord.coreDesc
-          }
-        })
-      );
+    if (!selectedRecord) {
+      window.dispatchEvent(new CustomEvent('coral:description-cleared'));
+      return;
     }
+
+    window.dispatchEvent(
+      new CustomEvent<CoreDescriptionMetadata>('coral:description-selected', {
+        detail: {
+          descNumber: selectedRecord.descNumber,
+          coreNumber: selectedRecord.coreNumber,
+          topDepth: selectedRecord.topDepth,
+          bottomDepth: selectedRecord.bottomDepth,
+          reservoir: selectedRecord.reservoir,
+          coreDesc: selectedRecord.coreDesc
+        }
+      })
+    );
+  }
+
+  private selectRowFromInput(): void {
+    const descNumber = this.selectedDescNumber();
+
+    if (!this.gridApi) {
+      return;
+    }
+
+    if (!descNumber) {
+      this.selectedRecord.set(null);
+      this.gridApi.deselectAll();
+      return;
+    }
+
+    const selectedRecord = this.rowData.find((row) => row.descNumber === descNumber) ?? null;
+    this.selectedRecord.set(selectedRecord);
+
+    this.gridApi.forEachNode((node) => {
+      node.setSelected(node.data?.descNumber === descNumber);
+    });
   }
 }

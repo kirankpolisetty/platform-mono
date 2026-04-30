@@ -1,29 +1,36 @@
 import { Routes } from '@angular/router';
-import { loadRemoteModule } from '@angular-architects/native-federation';
 
 export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'coreviewer'
+    children: []
+  },
+  {
+    path: 'coredescription/:descNumber',
+    children: []
+  },
+  {
+    path: 'coredescription/:descNumber/:coreTab',
+    children: []
   },
   {
     path: 'coreviewer',
-    loadComponent: () => loadRemoteModule('coreviewer', './Component').then((m) => m.AppComponent),
-    title: 'CoreViewer'
+    redirectTo: '',
+    pathMatch: 'full'
   },
   {
     path: 'dataviewer',
-    loadComponent: () => loadRemoteModule('dataviewer', './Component').then((m) => m.AppComponent),
-    title: 'DataViewer'
+    redirectTo: '',
+    pathMatch: 'full'
   },
   {
     path: 'data-viewer',
-    redirectTo: 'dataviewer',
+    redirectTo: '',
     pathMatch: 'full'
   },
   {
     path: '**',
-    redirectTo: 'coreviewer'
+    redirectTo: ''
   }
 ];

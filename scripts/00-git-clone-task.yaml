@@ -1,0 +1,38 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: coral-git-clone
+  namespace: kyranpoli-dev
+spec:
+  description: Clones a Git repository into the shared pipeline workspace.
+  params:
+    - name: url
+      type: string
+      description: Git repository URL.
+    - name: revision
+      type: string
+      default: main
+      description: Branch, tag, or commit to checkout.
+    - name: deleteExisting
+      type: string
+      default: "true"
+      description: Delete existing workspace contents before clone.
+  workspaces:
+    - name: output
+  steps:
+    - name: clone
+      image: registry.redhat.io/ubi9/ubi-minimal:latest
+      workingDir: $(workspaces.output.path)
+      script: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+
+        microdnf install -y git findutils
+
+        if [ "$(params.deleteExisting)" = "true" ]; then
+          find "$(workspaces.output.path)" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+        fi
+
+        git clone "$(params.url)" "$(workspaces.output.path)"
+        cd "$(workspaces.output.path)"
+        git checkout "$(params.revision)"

@@ -1,0 +1,12 @@
+@import "@arcgis/core/assets/esri/themes/light/main.css";
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}

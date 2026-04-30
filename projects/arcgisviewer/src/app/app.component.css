@@ -1,0 +1,199 @@
+:host {
+  display: block;
+  min-height: 100%;
+}
+
+.arcgis-shell {
+  display: grid;
+  gap: 1rem;
+  min-height: 100%;
+  padding: 1.2rem;
+  color: #e6f3ef;
+  background:
+    radial-gradient(circle at top left, rgba(33, 167, 138, 0.16), transparent 24%),
+    linear-gradient(180deg, rgba(7, 34, 45, 0.96), rgba(5, 18, 26, 0.98));
+}
+
+.arcgis-summary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(144, 224, 198, 0.16);
+  border-radius: 22px;
+  background: rgba(10, 35, 43, 0.78);
+}
+
+.pill-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.35rem;
+  color: #8de7c6;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.arcgis-summary h2 {
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.35rem, 2vw, 1.8rem);
+}
+
+.caption {
+  margin: 0;
+  color: #b9d5d2;
+  line-height: 1.6;
+}
+
+.type-pill,
+.status-pill {
+  align-self: center;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(38, 201, 164, 0.18);
+  color: #8ef0cf;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.type-pill {
+  background: rgba(245, 158, 11, 0.18);
+  color: #ffd08a;
+}
+
+.type-pill.gas {
+  background: rgba(20, 184, 166, 0.18);
+  color: #95f5ea;
+}
+
+.status-pill.planned {
+  background: rgba(246, 173, 85, 0.18);
+  color: #ffd39b;
+}
+
+.map-panel {
+  position: relative;
+  min-height: 360px;
+  border: 1px solid rgba(144, 224, 198, 0.18);
+  border-radius: 24px;
+  overflow: hidden;
+  background: #08212b;
+}
+
+.map-host {
+  width: 100%;
+  min-height: 360px;
+}
+
+.map-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  gap: 0.75rem;
+  background: linear-gradient(180deg, rgba(5, 18, 26, 0.78), rgba(5, 18, 26, 0.28));
+  color: #d8f8ec;
+}
+
+.map-loading span {
+  width: 42px;
+  height: 42px;
+  border: 3px solid rgba(216, 248, 236, 0.2);
+  border-top-color: #8de7c6;
+  border-radius: 50%;
+  animation: spin 900ms linear infinite;
+}
+
+.metadata-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin: 0;
+}
+
+.metadata-grid div {
+  padding: 0.95rem 1rem;
+  border: 1px solid rgba(144, 224, 198, 0.14);
+  border-radius: 18px;
+  background: rgba(10, 35, 43, 0.68);
+}
+
+.metadata-grid dt {
+  margin-bottom: 0.35rem;
+  color: #8de7c6;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.metadata-grid dd {
+  margin: 0;
+  color: #f2faf8;
+  font-weight: 600;
+}
+
+.legend-card {
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(144, 224, 198, 0.14);
+  border-radius: 18px;
+  background: rgba(10, 35, 43, 0.68);
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: #dcefeb;
+}
+
+.legend-row + .legend-row {
+  margin-top: 0.65rem;
+}
+
+.legend-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+}
+
+.legend-swatch.oil {
+  background: rgba(245, 158, 11, 0.55);
+}
+
+.legend-swatch.gas {
+  background: rgba(20, 184, 166, 0.55);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 900px) {
+  .metadata-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .arcgis-shell {
+    padding: 0.9rem;
+  }
+
+  .arcgis-summary {
+    flex-direction: column;
+  }
+
+  .metadata-grid {
+    grid-template-columns: 1fr;
+  }
+}

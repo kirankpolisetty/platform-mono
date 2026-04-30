@@ -5,72 +5,93 @@
     React application embedded inside the Core Viewer remote and exposed through native federation.
   </p>
 
-  <section class="metadata-card" aria-live="polite">
-    @if (selectedDescription(); as description) {
-      <p class="metadata-label">Selected core description</p>
+  @if (selectedDescription(); as description) {
+    <nav class="core-tabs" aria-label="Core Viewer sections">
+      <button
+        type="button"
+        [class.active]="activeCoreTab() === 'summary'"
+        [attr.aria-pressed]="activeCoreTab() === 'summary'"
+        (click)="navigateToTab('summary')"
+      >
+        Summary
+      </button>
+      <button
+        type="button"
+        [class.active]="activeCoreTab() === 'viewer'"
+        [attr.aria-pressed]="activeCoreTab() === 'viewer'"
+        (click)="navigateToTab('viewer')"
+      >
+        Embedded Viewer
+      </button>
+    </nav>
 
-      <div class="metadata-table-wrap">
-        <table class="metadata-table">
-          <thead>
-            <tr>
-              <th>Desc NO.</th>
-              <th>Core Number</th>
-              <th>Top Depth</th>
-              <th>Bottom Depth</th>
-              <th>Reservoir</th>
-              <th>Core Desc</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>{{ description.descNumber }}</td>
-              <td>{{ description.coreNumber }}</td>
-              <td>{{ description.topDepth }}</td>
-              <td>{{ description.bottomDepth }}</td>
-              <td>{{ description.reservoir }}</td>
-              <td>{{ description.coreDesc }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    @if (activeCoreTab() === 'summary') {
+      <section class="metadata-card" aria-live="polite">
+        <p class="metadata-label">Selected core description</p>
+
+        <div class="metadata-table-wrap">
+          <table class="metadata-table">
+            <thead>
+              <tr>
+                <th>Desc NO.</th>
+                <th>Core Number</th>
+                <th>Top Depth</th>
+                <th>Bottom Depth</th>
+                <th>Reservoir</th>
+                <th>Core Desc</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{ description.descNumber }}</td>
+                <td>{{ description.coreNumber }}</td>
+                <td>{{ description.topDepth }}</td>
+                <td>{{ description.bottomDepth }}</td>
+                <td>{{ description.reservoir }}</td>
+                <td>{{ description.coreDesc }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
     } @else {
+      <div class="actions">
+        <a class="viewer-button" [href]="reactAppUrl" target="_blank" rel="noopener noreferrer">
+          Open React App in New Tab
+        </a>
+      </div>
+
+      <section class="viewer-placeholder">
+        <header class="viewer-placeholder-header">
+          <span>Embedded React Viewer</span>
+          <strong>{{ reactAppUrl }}</strong>
+        </header>
+
+        @if (viewerLoading()) {
+          <div class="viewer-loader" aria-live="polite">
+            <div class="progress-track">
+              <div class="progress-bar"></div>
+            </div>
+            <p>Loading embedded viewer...</p>
+          </div>
+        }
+
+        <iframe
+          [src]="reactAppSource"
+          title="Core Viewer React App"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          (load)="onViewerLoaded()"
+        ></iframe>
+      </section>
+    }
+  } @else {
+    <section class="metadata-card" aria-live="polite">
       <p class="metadata-label">No description selected</p>
       <h3>Select a Desc NO. in Data Viewer</h3>
       <p class="metadata-empty">The metadata panel updates here immediately after a row is selected.</p>
-    }
-  </section>
-
-  @if (selectedDescription()) {
-    <div class="actions">
-      <a class="viewer-button" [href]="reactAppUrl" target="_blank" rel="noopener noreferrer">
-        Open React App in New Tab
-      </a>
-    </div>
-
-    <section class="viewer-placeholder">
-      <header class="viewer-placeholder-header">
-        <span>Embedded React Viewer</span>
-        <strong>{{ reactAppUrl }}</strong>
-      </header>
-
-      @if (viewerLoading()) {
-        <div class="viewer-loader" aria-live="polite">
-          <div class="progress-track">
-            <div class="progress-bar"></div>
-          </div>
-          <p>Loading embedded viewer...</p>
-        </div>
-      }
-
-      <iframe
-        [src]="reactAppSource"
-        title="Core Viewer React App"
-        loading="lazy"
-        referrerpolicy="no-referrer-when-downgrade"
-        (load)="onViewerLoaded()"
-      ></iframe>
     </section>
-  } @else {
+
     <section class="viewer-empty-state" aria-live="polite">
       <p class="metadata-label">Embedded React Viewer</p>
       <h3>Waiting for a selected description</h3>

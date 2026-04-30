@@ -1,0 +1,142 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: coral-azure-trigger-pipelinerun-role
+  namespace: kyranpoli-dev
+rules:
+  - apiGroups:
+      - tekton.dev
+    resources:
+      - pipelineruns
+    verbs:
+      - create
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - tekton.dev
+    resources:
+      - pipelines
+    verbs:
+      - get
+      - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: coral-azure-trigger-pipelinerun-rolebinding
+  namespace: kyranpoli-dev
+subjects:
+  - kind: ServiceAccount
+    name: pipeline
+    namespace: kyranpoli-dev
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: coral-azure-trigger-pipelinerun-role
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: coral-azure-devops-push-binding
+  namespace: kyranpoli-dev
+spec:
+  params:
+    - name: git-url
+      value: $(body.resource.repository.remoteUrl)
+    - name: git-revision
+      value: $(extensions.branch)
+    - name: base-revision
+      value: $(body.resource.refUpdates[0].oldObjectId)
+    - name: namespace
+      value: kyranpoli-dev
+    - name: image-tag
+      value: latest
+    - name: force-all
+      value: "false"
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: coral-azure-devops-trigger-template
+  namespace: kyranpoli-dev
+spec:
+  params:
+    - name: git-url
+    - name: git-revision
+    - name: base-revision
+    - name: namespace
+    - name: image-tag
+    - name: force-all
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        generateName: coral-monorepo-pipeline-run-
+        namespace: kyranpoli-dev
+      spec:
+        pipelineRef:
+          name: coral-monorepo-pipeline
+        taskRunTemplate:
+          serviceAccountName: pipeline
+        params:
+          - name: git-url
+            value: $(tt.params.git-url)
+          - name: git-revision
+            value: $(tt.params.git-revision)
+          - name: base-revision
+            value: $(tt.params.base-revision)
+          - name: namespace
+            value: $(tt.params.namespace)
+          - name: image-tag
+            value: $(tt.params.image-tag)
+          - name: force-all
+            value: $(tt.params.force-all)
+        workspaces:
+          - name: shared-workspace
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                storageClassName: gp3
+                resources:
+                  requests:
+                    storage: 2Gi
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: coral-monorepo-azure-listener
+  namespace: kyranpoli-dev
+spec:
+  serviceAccountName: pipeline
+  triggers:
+    - name: azure-devops-git-push
+      interceptors:
+        - ref:
+            name: cel
+          params:
+            - name: filter
+              value: body.eventType == 'git.push' && body.publisherId == 'tfs' && body.resource.refUpdates.size() > 0 && body.resource.refUpdates[0].name.startsWith('refs/heads/')
+            - name: overlays
+              value:
+                - key: branch
+                  expression: body.resource.refUpdates[0].name.replace('refs/heads/', '')
+      bindings:
+        - ref: coral-azure-devops-push-binding
+      template:
+        ref: coral-azure-devops-trigger-template
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: coral-monorepo-azure-webhook
+  namespace: kyranpoli-dev
+spec:
+  to:
+    kind: Service
+    name: el-coral-monorepo-azure-listener
+  port:
+    targetPort: http-listener
+  tls:
+    termination: edge

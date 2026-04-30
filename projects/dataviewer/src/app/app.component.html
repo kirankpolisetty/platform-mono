@@ -43,6 +43,7 @@
       [rowData]="rowData"
       [rowSelection]="rowSelection"
       [theme]="theme"
+      (gridReady)="onGridReady($event)"
       (selectionChanged)="onSelectionChanged($event)"
       domLayout="normal"
     />

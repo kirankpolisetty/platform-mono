@@ -1,0 +1,82 @@
+<section class="arcgis-shell">
+  <header class="arcgis-summary">
+    @if (selectedWell(); as well) {
+      <div>
+        <p class="eyebrow">ArcGIS Remote</p>
+        <h2>{{ well.wellName }}</h2>
+        <p class="caption">
+          Desc NO. {{ well.descNumber }} in {{ well.fieldName }} with {{ well.wellType.toLowerCase() }} well mapping.
+        </p>
+      </div>
+
+      <div class="pill-row">
+        <div class="type-pill" [class.gas]="well.wellType === 'Gas'">{{ well.wellType }}</div>
+        <div class="status-pill" [class.planned]="well.status === 'Planned'">
+          {{ well.status }}
+        </div>
+      </div>
+    } @else {
+      <div>
+        <p class="eyebrow">ArcGIS Remote</p>
+        <h2>No well selected</h2>
+        <p class="caption">Choose a Desc NO. in Data Viewer to center the ArcGIS map on a Saudi oil or gas well.</p>
+      </div>
+    }
+  </header>
+
+  <div class="map-panel">
+    <div #mapHost class="map-host" aria-label="ArcGIS map"></div>
+
+    @if (!mapReady()) {
+      <div class="map-loading">
+        <span></span>
+        <p>Loading ArcGIS map...</p>
+      </div>
+    }
+  </div>
+
+  @if (selectedWell(); as well) {
+    <dl class="metadata-grid">
+      <div>
+        <dt>Well</dt>
+        <dd>{{ well.wellName }}</dd>
+      </div>
+      <div>
+        <dt>Type</dt>
+        <dd>{{ well.wellType }}</dd>
+      </div>
+      <div>
+        <dt>Field</dt>
+        <dd>{{ well.fieldName }}</dd>
+      </div>
+      <div>
+        <dt>Latitude</dt>
+        <dd>{{ well.latitude }}</dd>
+      </div>
+      <div>
+        <dt>Longitude</dt>
+        <dd>{{ well.longitude }}</dd>
+      </div>
+      <div>
+        <dt>Reservoir</dt>
+        <dd>{{ well.reservoir }}</dd>
+      </div>
+      <div>
+        <dt>Core Desc</dt>
+        <dd>{{ well.coreDesc }}</dd>
+      </div>
+    </dl>
+  }
+
+  <section class="legend-card" aria-label="Map legend">
+    <p class="eyebrow">Legend</p>
+    <div class="legend-row">
+      <span class="legend-swatch oil"></span>
+      <span>Oil field polygon / oil well marker</span>
+    </div>
+    <div class="legend-row">
+      <span class="legend-swatch gas"></span>
+      <span>Gas field polygon / gas well marker</span>
+    </div>
+  </section>
+</section>

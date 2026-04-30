@@ -1,0 +1,88 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: coral-monorepo-pipeline
+  namespace: kyranpoli-dev
+spec:
+  description: Clone the Angular monorepo, detect changed Angular apps, then fan out separate build and deploy task runs per app.
+  params:
+    - name: git-url
+      type: string
+    - name: git-revision
+      type: string
+      default: main
+    - name: base-revision
+      type: string
+      default: HEAD~1
+    - name: namespace
+      type: string
+      default: kyranpoli-dev
+    - name: image-tag
+      type: string
+      default: latest
+    - name: force-all
+      type: string
+      default: "false"
+  workspaces:
+    - name: shared-workspace
+  tasks:
+    - name: clone
+      taskRef:
+        name: coral-git-clone
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+      params:
+        - name: url
+          value: $(params.git-url)
+        - name: revision
+          value: $(params.git-revision)
+        - name: deleteExisting
+          value: "true"
+
+    - name: detect-changes
+      runAfter:
+        - clone
+      taskRef:
+        name: detect-monorepo-changes
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      params:
+        - name: base-revision
+          value: $(params.base-revision)
+        - name: force-all
+          value: $(params.force-all)
+
+    - name: build-app
+      runAfter:
+        - detect-changes
+      matrix:
+        params:
+          - name: app-name
+            value: $(tasks.detect-changes.results.changed-apps[*])
+      taskRef:
+        name: build-angular-image
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      params:
+        - name: image-tag
+          value: $(params.image-tag)
+        - name: namespace
+          value: $(params.namespace)
+
+    - name: deploy-app
+      runAfter:
+        - build-app
+      matrix:
+        params:
+          - name: app-name
+            value: $(tasks.detect-changes.results.changed-apps[*])
+      taskRef:
+        name: deploy-openshift-app
+      params:
+        - name: image-tag
+          value: $(params.image-tag)
+        - name: namespace
+          value: $(params.namespace)

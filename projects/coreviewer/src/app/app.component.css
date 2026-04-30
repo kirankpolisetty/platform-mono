@@ -31,6 +31,33 @@ h2 {
   line-height: 1.7;
 }
 
+.core-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.core-tabs button {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  padding: 0.8rem 1.05rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: #d3e7ff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 150ms ease, background-color 150ms ease, border-color 150ms ease;
+}
+
+.core-tabs button:hover,
+.core-tabs button.active {
+  transform: translateY(-1px);
+  border-color: rgba(144, 202, 249, 0.7);
+  background: rgba(144, 202, 249, 0.18);
+  color: #f4f8ff;
+}
+
 .metadata-card {
   margin-bottom: 1.25rem;
   padding: 1.25rem;

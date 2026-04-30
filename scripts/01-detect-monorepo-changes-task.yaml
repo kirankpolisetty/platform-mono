@@ -1,0 +1,112 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: detect-monorepo-changes
+  namespace: kyranpoli-dev
+spec:
+  description: Detects which Angular application projects changed in the monorepo.
+  params:
+    - name: base-revision
+      type: string
+      default: HEAD~1
+      description: Git revision to compare against the checked-out revision.
+    - name: force-all
+      type: string
+      default: "false"
+      description: Set to true to build and deploy all apps.
+  workspaces:
+    - name: source
+  results:
+    - name: changed-apps
+      type: array
+      description: Angular app names that should be built and deployed.
+    - name: all-apps
+      type: array
+      description: Angular app names discovered from angular.json.
+    - name: changed-files
+      description: Files detected as changed.
+  steps:
+    - name: detect
+      image: registry.redhat.io/ubi9/ubi-minimal:latest
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+
+        microdnf install -y git jq
+
+        COMMON_CHANGE_REGEX='^(package\.json|package-lock\.json|angular\.json|Dockerfile|\.dockerignore|tsconfig.*\.json)$'
+
+        ALL_APPS_JSON="$(
+          jq -r '
+            .projects
+            | to_entries
+            | map(select(.value.projectType == "application"))
+            | map(.key)
+          ' angular.json
+        )"
+
+        APP_ROOTS="$(
+          jq -r '
+            .projects
+            | to_entries[]
+            | select(.value.projectType == "application")
+            | "\(.key)\t\(.value.root)"
+          ' angular.json
+        )"
+
+        if [ "$ALL_APPS_JSON" = "[]" ]; then
+          echo "No Angular application projects found in angular.json" >&2
+          exit 1
+        fi
+
+        ALL_APPS_LOG="$(jq -r 'join(",")' <<< "$ALL_APPS_JSON")"
+
+        if [ "$(params.force-all)" = "true" ]; then
+          echo "force-all=true, building every app."
+          echo "force-all" > "$(results.changed-files.path)"
+          CHANGED_APPS_JSON="$ALL_APPS_JSON"
+        else
+          BASE_REVISION="$(params.base-revision)"
+
+          git fetch --unshallow 2>/dev/null || true
+          git fetch --all --tags 2>/dev/null || true
+
+          if git rev-parse --verify "$BASE_REVISION" >/dev/null 2>&1; then
+            CHANGED_FILES="$(git diff --name-only "$BASE_REVISION" HEAD)"
+          elif git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
+            CHANGED_FILES="$(git diff --name-only HEAD~1 HEAD)"
+          else
+            CHANGED_FILES="$(git ls-files)"
+          fi
+
+          printf '%s\n' "$CHANGED_FILES" | tee "$(results.changed-files.path)"
+
+          if printf '%s\n' "$CHANGED_FILES" | grep -Eq "$COMMON_CHANGE_REGEX"; then
+            CHANGED_APPS_JSON="$ALL_APPS_JSON"
+          else
+            CHANGED_APPS=()
+
+            while IFS=$'\t' read -r app_name app_root; do
+              [ -n "$app_name" ] || continue
+
+              if printf '%s\n' "$CHANGED_FILES" | grep -Eq "^${app_root}/"; then
+                CHANGED_APPS+=("$app_name")
+              fi
+            done <<< "$APP_ROOTS"
+
+            if [ "${#CHANGED_APPS[@]}" -eq 0 ]; then
+              CHANGED_APPS_JSON="[]"
+            else
+              CHANGED_APPS_JSON="$(
+                printf '%s\n' "${CHANGED_APPS[@]}" | jq -R . | jq -s -c .
+              )"
+            fi
+          fi
+        fi
+
+        echo -n "$ALL_APPS_JSON" > "$(results.all-apps.path)"
+        echo -n "$CHANGED_APPS_JSON" > "$(results.changed-apps.path)"
+
+        echo "all-apps=${ALL_APPS_LOG}"
+        echo "changed-apps=$(jq -r 'if length == 0 then \"<none>\" else join(\",\") end' <<< "$CHANGED_APPS_JSON")"
